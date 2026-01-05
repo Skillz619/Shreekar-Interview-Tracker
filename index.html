@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .main-content {
+            min-height: 400px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .company-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .company-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .company-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .company-item.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        .edit-btn:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .company-item.selected .edit-btn {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .company-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            padding-right: 40px;
+        }
+
+        .company-role {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .company-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .rounds-count {
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rounds-count::before {
+            content: '🔄';
+            font-size: 0.9rem;
+        }
+
+        .company-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-progress { background: #dbeafe; color: #1e40af; }
+        .status-waiting { background: #fef3c7; color: #92400e; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-discarded { background: #f3f4f6; color: #4b5563; }
+
+        .rounds-display {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .round-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .round-number {
+            font-weight: 600;
+            color: #6b7280;
+            min-width: 20px;
+        }
+
+        .round-name {
+            flex: 1;
+            color: #374151;
+        }
+
+        .round-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .round-badge.passed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .round-badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .round-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .round-badge.completed {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .final-status {
+            font-size: 0.85rem;
+            color: #6b7280;
+            padding-top: 8px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .final-status strong {
+            color: #1a1a1a;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .edit-panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .panel-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .stages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stage-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .stage-item input {
+            flex: 1;
+        }
+
+        .stage-item select {
+            width: 110px;
+        }
+
+        .btn-remove {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #fecaca;
+        }
+
+        .btn-add-stage {
+            width: 100%;
+            padding: 8px;
+            border: 1px dashed #d1d5db;
+            background: transparent;
+            color: #6b7280;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-add-stage:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-new {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 968px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Interview Tracker</h1>
+            <p class="subtitle">Manage your job applications</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="activeCount">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="rejectedCount">0</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Active Rate</div>
+            </div>
+        </div>
+
+        <div class="layout">
+            <div class="main-content">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search companies or roles...">
+                </div>
+
+                <div id="companyList" class="company-list"></div>
+            </div>
+
+            <div class="sidebar">
+                <div class="edit-panel">
+                    <button class="btn btn-primary btn-new" id="newCompanyBtn">+ New Company</button>
+                    
+                    <div class="panel-header" id="panelTitle">Select a company</div>
+                    
+                    <form id="companyForm" style="display: none;">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="companyName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Role</label>
+                            <input type="text" id="companyRole" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="companyStatus" required>
+                                <option value="progress">In Progress</option>
+                                <option value="waiting">Waiting</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="discarded">Discarded</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Interview Stages</label>
+                            <div class="stages-list" id="stagesList"></div>
+                            <button type="button" class="btn-add-stage" id="addStageBtn">+ Add Stage</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea id="companyNotes"></textarea>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                        </div>
+
+                        <div class="action-buttons" id="deleteSection" style="display: none; margin-top: 10px;">
+                            <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let companies = [];
+        let editingId = null;
+        let selectedId = null;
+
+        function initializeData() {
+            const stored = localStorage.getItem('interviewTracker');
+            if (stored) {
+                companies = JSON.parse(stored);
+            } else {
+                companies = [
+                    {
+                        id: 1,
+                        company: "Intuitive",
+                        role: "DevOps Engineer",
+                        stages: [{ name: "Phone Interview (15 min)", status: "completed" }],
+                        status: "discarded",
+                        notes: "Role discarded after recruiter call"
+                    },
+                    {
+                        id: 2,
+                        company: "Google",
+                        role: "SWE 3",
+                        stages: [
+                            { name: "Hiring Assessment", status: "passed" },
+                            { name: "Screening Round 1", status: "failed" }
+                        ],
+                        status: "rejected",
+                        notes: "Passed assessment but failed screening round"
+                    },
+                    {
+                        id: 3,
+                        company: "MUFG",
+                        role: "Software Engineer",
+                        stages: [{ name: "Questionnaire", status: "completed" }],
+                        status: "discarded",
+                        notes: "No response after questionnaire"
+                    },
+                    {
+                        id: 4,
+                        company: "Rokt",
+                        role: "Software Engineer",
+                        stages: [
+                            { name: "OA", status: "passed" },
+                            { name: "Screening Round 1", status: "passed" },
+                            { name: "System Design Round 2", status: "passed" },
+                            { name: "Hiring Manager Round 3", status: "passed" },
+                            { name: "LC + Project Round 4", status: "failed" }
+                        ],
+                        status: "rejected",
+                        notes: "Failed final round (LC + Project)"
+                    },
+                    {
+                        id: 5,
+                        company: "Prodex Labs",
+                        role: "Software Engineer",
+                        stages: [
+                            { name: "Screening Call (30 min)", status: "passed" },
+                            { name: "Technical System Design (60 min)", status: "pending" }
+                        ],
+                        status: "waiting",
+                        notes: "Completed system design round, waiting for result"
+                    },
+                    {
+                        id: 6,
+                        company: "Intuit",
+                        role: "SE1",
+                        stages: [
+                            { name: "OA", status: "passed" },
+                            { name: "Recruiter Call", status: "failed" }
+                        ],
+                        status: "rejected",
+                        notes: "Failed recruiter call"
+                    },
+                    {
+                        id: 7,
+                        company: "Nvidia",
+                        role: "DevOps Engineer",
+                        stages: [{ name: "Phone Interview (45 min) - Hiring Manager", status: "pending" }],
+                        status: "waiting",
+                        notes: "Completed hiring manager interview, waiting for result"
+                    },
+                    {
+                        id: 8,
+                        company: "Meta",
+                        role: "Production Engineer",
+                        stages: [
+                            { name: "Recruiter Call (30 min)", status: "passed" },
+                            { name: "Phone Interview", status: "pending" }
+                        ],
+                        status: "progress",
+                        notes: "Phone interview scheduled"
+                    }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('interviewTracker', JSON.stringify(companies));
+        }
+
+        function getStatusClass(status) {
+            return 'status-' + status;
+        }
+
+        function getStatusText(status) {
+            const map = {
+                'waiting': 'Waiting',
+                'progress': 'In Progress',
+                'rejected': 'Rejected',
+                'discarded': 'Discarded'
+            };
+            return map[status] || status;
+        }
+
+        function getStageIcon(status) {
+            const map = {
+                'passed': '✓',
+                'failed': '✗',
+                'pending': '○',
+                'completed': '•'
+            };
+            return map[status] || '○';
+        }
+
+        function getFinalStatus(company) {
+            const totalStages = company.stages.length;
+            const passedStages = company.stages.filter(s => s.status === 'passed').length;
+            const failedStages = company.stages.filter(s => s.status === 'failed').length;
+            const pendingStages = company.stages.filter(s => s.status === 'pending').length;
+
+            if (company.status === 'rejected' || company.status === 'discarded') {
+                return `${passedStages}/${totalStages} rounds completed - ${getStatusText(company.status)}`;
+            }
+
+            if (failedStages > 0) {
+                return `${passedStages}/${totalStages} rounds passed - Failed at round ${passedStages + 1}`;
+            }
+
+            if (pendingStages > 0) {
+                return `${passedStages}/${totalStages} rounds completed - Currently at round ${passedStages + 1}`;
+            }
+
+            if (passedStages === totalStages) {
+                return `${passedStages}/${totalStages} rounds completed - All rounds passed`;
+            }
+
+            return `${passedStages}/${totalStages} rounds completed`;
+        }
+
+        function renderCompanies() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = companies.filter(c => 
+                c.company.toLowerCase().includes(searchTerm) ||
+                c.role.toLowerCase().includes(searchTerm)
+            );
+
+            const list = document.getElementById('companyList');
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state"><h3>No companies found</h3><p>Try a different search term</p></div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(c => `
+                <div class="company-item ${selectedId === c.id ? 'selected' : ''}" data-id="${c.id}">
+                    <button type="button" class="edit-btn" data-edit-id="${c.id}" title="Edit">✏️</button>
+                    <div class="company-name">${c.company}</div>
+                    <div class="company-role">${c.role}</div>
+                    <div class="company-meta">
+                        <span class="rounds-count">${c.stages.length} ${c.stages.length === 1 ? 'Round' : 'Rounds'}</span>
+                        <span class="company-status ${getStatusClass(c.status)}">
+                            ${getStatusText(c.status)}
+                        </span>
+                    </div>
+                    <div class="rounds-display">
+                        ${c.stages.map((stage, index) => `
+                            <div class="round-item">
+                                <span class="round-number">${index + 1}.</span>
+                                <span class="round-name">${stage.name}</span>
+                                <span class="round-badge ${stage.status}">${getStageIcon(stage.status)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="final-status">
+                        <strong>Progress:</strong> ${getFinalStatus(c)}
+                    </div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = parseInt(this.getAttribute('data-edit-id'));
+                    editCompany(id);
+                });
+            });
+
+            updateStats();
+        }
+
+        function editCompany(id) {
+            selectedId = id;
+            editingId = id;
+            const company = companies.find(c => c.id === id);
+            
+            if (!company) {
+                alert('Company not found!');
+                return;
+            }
+            
+            document.getElementById('panelTitle').textContent = 'Edit Company';
+            document.getElementById('companyName').value = company.company;
+            document.getElementById('companyRole').value = company.role;
+            document.getElementById('companyStatus').value = company.status;
+            document.getElementById('companyNotes').value = company.notes;
+
+            const stagesList = document.getElementById('stagesList');
+            stagesList.innerHTML = '';
+            company.stages.forEach(stage => {
+                addStage(stage.name, stage.status);
+            });
+
+            document.getElementById('companyForm').style.display = 'block';
+            document.getElementById('deleteSection').style.display = 'flex';
+
+            renderCompanies();
+        }
+
+        function startNew() {
+            selectedId = null;
+            editingId = null;
+            
+            document.getElementById('panelTitle').textContent = 'New Company';
+            document.getElementById('companyForm').reset();
+            document.getElementById('stagesList').innerHTML = '';
+            addStage();
+            
+            document.getElementById('companyForm').style.display = 'block';
+            document.getElementById('deleteSection').style.display = 'none';
+
+            renderCompanies();
+        }
+
+        function cancelEdit() {
+            selectedId = null;
+            editingId = null;
+            
+            document.getElementById('panelTitle').textContent = 'Select a company';
+            document.getElementById('companyForm').style.display = 'none';
+            
+            renderCompanies();
+        }
+
+        function addStage(name = '', status = 'pending') {
+            const stagesList = document.getElementById('stagesList');
+            const stageId = Date.now() + Math.random();
+            
+            const div = document.createElement('div');
+            div.className = 'stage-item';
+            div.innerHTML = `
+                <input type="text" placeholder="Stage name" value="${name}" data-stage-id="${stageId}">
+                <select data-stage-status="${stageId}">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="passed" ${status === 'passed' ? 'selected' : ''}>Passed</option>
+                    <option value="failed" ${status === 'failed' ? 'selected' : ''}>Failed</option>
+                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                </select>
+                <button type="button" class="btn-remove">×</button>
+            `;
+            
+            div.querySelector('.btn-remove').addEventListener('click', function() {
+                div.remove();
+            });
+            
+            stagesList.appendChild(div);
+        }
+
+        function deleteCompany() {
+            if (!editingId) return;
+            if (confirm('Delete this company?')) {
+                companies = companies.filter(c => c.id !== editingId);
+                saveData();
+                cancelEdit();
+                renderCompanies();
+            }
+        }
+
+        function updateStats() {
+            const total = companies.length;
+            const active = companies.filter(c => c.status === 'progress' || c.status === 'waiting').length;
+            const rejected = companies.filter(c => c.status === 'rejected').length;
+            const rate = total > 0 ? Math.round((active / total) * 100) : 0;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('successRate').textContent = rate + '%';
+        }
+
+        document.getElementById('newCompanyBtn').addEventListener('click', startNew);
+        document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+        document.getElementById('deleteBtn').addEventListener('click', deleteCompany);
+        document.getElementById('addStageBtn').addEventListener('click', () => addStage());
+        document.getElementById('searchInput').addEventListener('input', renderCompanies);
+
+        document.getElementById('companyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const stages = [];
+            document.querySelectorAll('.stage-item').forEach(item => {
+                const input = item.querySelector('input');
+                const select = item.querySelector('select');
+                if (input.value.trim()) {
+                    stages.push({
+                        name: input.value.trim(),
+                        status: select.value
+                    });
+                }
+            });
+
+            const companyData = {
+                company: document.getElementById('companyName').value,
+                role: document.getElementById('companyRole').value,
+                status: document.getElementById('companyStatus').value,
+                stages: stages,
+                notes: document.getElementById('companyNotes').value
+            };
+
+            if (editingId) {
+                const index = companies.findIndex(c => c.id === editingId);
+                companies[index] = { ...companies[index], ...companyData };
+            } else {
+                companies.push({
+                    id: Date.now(),
+                    ...companyData
+                });
+            }
+
+            saveData();
+            renderCompanies();
+        });
+
+        initializeData();
+        renderCompanies();
+    </script>
+</body>
+</html>
