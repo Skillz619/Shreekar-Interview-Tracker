@@ -22,6 +22,7 @@
             --stat-bg: #ffffff;
             --selected-bg: #eff6ff;
             --hover-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #3b82f6;
         }
 
         body.dark-mode {
@@ -96,7 +97,14 @@
 
         .theme-toggle:hover {
             transform: scale(1.1);
-            border-color: #3b82f6;
+            border-color: var(--accent-color);
+        }
+
+        .theme-toggle:focus,
+        .theme-toggle:focus-visible {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .layout {
@@ -532,7 +540,7 @@
                 <h1>Interview Tracker</h1>
                 <p class="subtitle">Manage your job applications</p>
             </div>
-            <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <button id="themeToggle" class="theme-toggle">
                 <span id="themeIcon">🌙</span>
             </button>
         </header>
@@ -664,6 +672,9 @@
                 toggleTheme();
             }
         });
+
+        // Initialize theme before other initialization
+        initializeTheme();
 
         let companies = [];
         let editingId = null;
@@ -1008,6 +1019,7 @@
             renderCompanies();
         });
 
+        // Initialize theme before other initialization
         initializeTheme();
         initializeData();
         renderCompanies();
