@@ -619,6 +619,19 @@
 
     <script>
         // Dark mode functionality
+        function updateThemeButton(isDark) {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (isDark) {
+                themeIcon.textContent = '☀️';
+                themeToggle.setAttribute('aria-label', 'Switch to light mode');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+            }
+        }
+
         function initializeTheme() {
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -626,24 +639,31 @@
             
             if (isDark) {
                 document.body.classList.add('dark-mode');
-                document.getElementById('themeIcon').textContent = '☀️';
             }
+            updateThemeButton(isDark);
         }
 
         function toggleTheme() {
             const isDark = document.body.classList.toggle('dark-mode');
-            const themeIcon = document.getElementById('themeIcon');
             
             if (isDark) {
-                themeIcon.textContent = '☀️';
                 localStorage.setItem('theme', 'dark');
             } else {
-                themeIcon.textContent = '🌙';
                 localStorage.setItem('theme', 'light');
             }
+            
+            updateThemeButton(isDark);
         }
 
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // Keyboard accessibility for theme toggle
+        document.getElementById('themeToggle').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
 
         let companies = [];
         let editingId = null;
